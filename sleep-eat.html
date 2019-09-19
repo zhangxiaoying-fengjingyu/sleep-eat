@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+     <title>吃饭睡觉链式调用</title>
+</head>
+<body>
+     
+
+     <script>
+          function Person(str) {
+             // console.log(this)//window
+             if (!Person.prototype.isPrototypeOf(this)) {//验证参数this是否在原型上
+               return new Person(str)
+             }
+             this.events = []// 放所有的任务，后面利用push，unshift排序
+             this.init(str)
+             setTimeout(() => {
+               this.ranTask()
+             }, 2000);
+          }
+          // 执行任务的方法
+          Person.prototype.ranTask =async function() {
+               for(let val of this.events){
+                   await val.task(val.time)
+               }
+          }
+          // Person
+          Person.prototype.init = function(content) {
+               function task () {
+                   console.log(content)
+               }
+               this.events.push({task})
+               return this
+          }
+          // eat
+          Person.prototype.eat = function(content) {
+               function task () {
+                   console.log(content)
+               }
+               this.events.push({task})
+               return this
+          }
+          // sleep
+          Person.prototype.sleep = function(time) {
+              async function task (time) {
+                   await new Promise(resolve => {
+                        setTimeout(() => {
+                             resolve()
+                        }, time);
+                   })
+                   console.log('sleep')
+               }
+               this.events.push({task, time})
+               return this
+          }
+          // firstSleep
+          Person.prototype.firstSleep = function(time) {
+               async function task (time) {
+                   await new Promise(resolve => {
+                        setTimeout(() => {
+                             resolve()
+                        }, time);
+                   })
+                   console.log('firstSleep')
+               }
+               this.events.unshift({task})
+               return this
+          }
+          Person('people').eat('eat').sleep(2000).firstSleep(3000).eat('eat again')
+          /**
+           * 关键点，要实现链式调用，需要return this
+           * 将所有任务放到一个数组中，排好序
+           * 有定时器，setTimeout，按照顺序执行
+           * 需要传入时间，所以的解构
+          */
+     </script>
+</body>
+</html> 
